@@ -1,2 +1,2 @@
-# py-mula
+# pymula
 Python adapter for Cellulant Mula
