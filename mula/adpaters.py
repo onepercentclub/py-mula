@@ -1,3 +1,6 @@
+import json
+from datetime import timedelta, datetime
+
 import requests
 
 
@@ -9,6 +12,7 @@ class MulaAdapter(object):
     AUTH_PATH = '/oauth/token'
     INITIATE_REQUEST_PATH = '/requests/initiate'
     CHARGE_REQUEST_PATH = '/requests/charge'
+    QUERY_STATUS_PATH = '/requests/query-status'
 
     def __init__(self, client_id, client_secret, service_code):
 
@@ -27,7 +31,11 @@ class MulaAdapter(object):
         }
 
         response = requests.post(url, payload)
-        return response.json().access_token
+        return response.json()['access_token']
+
+    def get_headers(self):
+        token = self.get_access_token()
+        return {"Authorization": "Bearer {}".format(token)}
 
     def get_payment_options(self):
 
@@ -49,11 +57,13 @@ class MulaAdapter(object):
                          currency_code='KES',
                          country_code='KE',
                          description='',
-                         due_date=None,
+                         due_date='',
                          callback_url='',
                          customer_first_name='',
                          customer_last_name='',
                          customer_email='nomen@example.com'):
+        if not due_date:
+            due_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
 
         payload = {
             "merchantTransactionID": transaction_id,
@@ -70,10 +80,10 @@ class MulaAdapter(object):
             "countryCode": country_code,
             "paymentWebhookUrl": callback_url
         }
+        print payload
 
-        url = "{}{}".format(self.domain, self.INITIATE_PAYMENT_PATH)
-        token = self.get_access_token()
-        response = requests.post(url, payload, auth="Bearer {}".format(token))
+        url = "{}{}".format(self.domain, self.INITIATE_REQUEST_PATH)
+        response = requests.post(url, json=payload, headers=self.get_headers())
         return response.json()
 
     def charge_request(self,
@@ -97,7 +107,20 @@ class MulaAdapter(object):
             "countryCode": country_code
         }
 
-        url = "{}{}".format(self.domain, self.INITIATE_PAYMENT_PATH)
-        token = self.get_access_token()
-        response = requests.post(url, payload, auth="Bearer {}".format(token))
+        url = "{}{}".format(self.domain, self.CHARGE_REQUEST_PATH)
+        response = requests.post(url, json=payload, headers=self.get_headers())
+        return response.json()
+
+
+    def request_status(self,
+                       transaction_id,
+                       checkout_request_id):
+
+        payload = {
+            "merchantTransactionID": transaction_id,
+            "checkoutRequestID": checkout_request_id
+        }
+
+        url = "{}{}".format(self.domain, self.QUERY_STATUS_PATH)
+        response = requests.post(url, json=payload, headers=self.get_headers())
         return response.json()
