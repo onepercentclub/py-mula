@@ -3,19 +3,18 @@ import requests
 
 class MulaAdapter(object):
 
-    SANDBOX_DOMAIN = 'https://beep2.cellulant.com:9001/'
+    SANDBOX_DOMAIN = 'https://beep2.cellulant.com:9212/checkout/v2/custom'
+    LIVE_DOMAIN = 'https://checkout.cellulant.com/checkout/v2/custom'
 
-    AUTH_PATH = '/CheckoutV2/checkoutPublicAPI/oauth/token'
-    PAYMENT_OPTIONS_PATH = '/CheckoutV2/checkoutPublicAPI/api/payment/options/' \
-                           '{client_code}?countryCode={country}&languageCode={language}'
-    INITIATE_PAYMENT_PATH = '/CheckoutV2/checkoutPublicAPI/api/transaction'
-    PAYMENT_DETAILS_PATH = '/CheckoutV2/checkoutPublicAPI/api/transaction/payment-details'
+    AUTH_PATH = '/oauth/token'
+    INITIATE_REQUEST_PATH = '/requests/initiate'
+    CHARGE_REQUEST_PATH = '/requests/charge'
 
-    def __init__(self, client_id, client_secret, client_code):
+    def __init__(self, client_id, client_secret, service_code):
 
         self.client_id = client_id
         self.client_secret = client_secret
-        self.client_code = client_code
+        self.service_code = service_code
         self.domain = self.SANDBOX_DOMAIN
 
     def get_access_token(self):
@@ -42,38 +41,63 @@ class MulaAdapter(object):
         response = requests.get(url, auth="Bearer {}".format(token))
         print response
 
-    def initiate_transaction(self,
-                             msisdn,
-                             transaction_reference_id,
-                             account_number,
-                             amount,
-                             currency_code='KES',
-                             country_code='KE',
-                             payment_method='MPESA',
-                             language='en',
-                             payment_option='Mobile Money',
-                             payment_mode='push notification',
-                             callback_url=None):
+    def checkout_request(self,
+                         msisdn,
+                         transaction_id,
+                         account_number,
+                         amount,
+                         currency_code='KES',
+                         country_code='KE',
+                         description='',
+                         due_date=None,
+                         callback_url='',
+                         customer_first_name='',
+                         customer_last_name='',
+                         customer_email='nomen@example.com'):
+
+        payload = {
+            "merchantTransactionID": transaction_id,
+            "accountNumber": account_number,
+            "customerFirstName": customer_first_name,
+            "customerLastName": customer_last_name,
+            "MSISDN": msisdn,
+            "customerEmail": customer_email,
+            "requestAmount": amount,
+            "currencyCode": currency_code,
+            "serviceCode": self.service_code,
+            "dueDate": due_date,
+            "requestDescription": description,
+            "countryCode": country_code,
+            "paymentWebhookUrl": callback_url
+        }
 
         url = "{}{}".format(self.domain, self.INITIATE_PAYMENT_PATH)
         token = self.get_access_token()
+        response = requests.post(url, payload, auth="Bearer {}".format(token))
+        return response.json()
+
+    def charge_request(self,
+                       msisdn,
+                       transaction_id,
+                       checkout_request_id,
+                       amount,
+                       currency_code='KES',
+                       country_code='KE',
+                       payer_mode_id=4,
+                       language_code='en'):
 
         payload = {
-            "MSISDN": msisdn,
-            "payerClientCode": payment_method,
-            "serviceCode": self.client_code,
-            "countryCode": country_code,
-            "transactionReferenceID": transaction_reference_id,
-            "paymentOptionCode": payment_option,
-            "paymentMode": payment_mode,
+            "merchantTransactionID": transaction_id,
+            "checkoutRequestID": checkout_request_id,
+            "chargeMsisdn": msisdn,
+            "chargeAmount": amount,
             "currencyCode": currency_code,
-            "amount": amount,
-            "accountNumber": account_number,
-            "language": language,
+            "payerModeID": payer_mode_id,
+            "languageCode": language_code,
+            "countryCode": country_code
         }
-        if callback_url:
-            payload['callBackUrl'] = callback_url
 
+        url = "{}{}".format(self.domain, self.INITIATE_PAYMENT_PATH)
+        token = self.get_access_token()
         response = requests.post(url, payload, auth="Bearer {}".format(token))
-
-
+        return response.json()
