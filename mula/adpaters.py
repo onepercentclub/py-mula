@@ -7,7 +7,7 @@ import requests
 class MulaAdapter(object):
 
     SANDBOX_DOMAIN = 'https://beep2.cellulant.com:9212/checkout/v2/custom'
-    LIVE_DOMAIN = 'https://checkout.cellulant.com/checkout/v2/custom'
+    LIVE_DOMAIN = 'https://online.mula.africa/v2/custom'
 
     AUTH_PATH = '/oauth/token'
     INITIATE_REQUEST_PATH = '/requests/initiate'
@@ -61,8 +61,9 @@ class MulaAdapter(object):
                          callback_url='',
                          customer_first_name='',
                          customer_last_name='',
-                         customer_email='nomen@example.com'):
+                         customer_email=''):
         if not due_date:
+            # set due date for tomorrow by default.
             due_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
 
         payload = {
@@ -80,7 +81,6 @@ class MulaAdapter(object):
             "countryCode": country_code,
             "paymentWebhookUrl": callback_url
         }
-        print payload
 
         url = "{}{}".format(self.domain, self.INITIATE_REQUEST_PATH)
         response = requests.post(url, json=payload, headers=self.get_headers())
@@ -93,7 +93,7 @@ class MulaAdapter(object):
                        amount,
                        currency_code='KES',
                        country_code='KE',
-                       payer_mode_id=4,
+                       payer_mode_id=1,
                        language_code='en'):
 
         payload = {
