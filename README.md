@@ -15,7 +15,7 @@ To start a payment:
 
 ```
 response = adapter.checkout_request(
-  msisdn='2547123456789'.
+  msisdn='2547123456789',
   transaction_id='123',
   account_number='12456768',
   amount=500,

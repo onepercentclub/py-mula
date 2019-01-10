@@ -14,7 +14,7 @@ class MulaAdapter(object):
     CHARGE_REQUEST_PATH = '/requests/charge'
     QUERY_STATUS_PATH = '/requests/query-status'
 
-    def __init__(self, client_id, client_secret, service_code):
+    def __init__(self, client_id, client_secret, client_code, service_code):
 
         self.client_id = client_id
         self.client_secret = client_secret
