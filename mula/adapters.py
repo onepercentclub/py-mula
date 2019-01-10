@@ -13,11 +13,13 @@ class MulaAdapter(object):
     INITIATE_REQUEST_PATH = '/requests/initiate'
     CHARGE_REQUEST_PATH = '/requests/charge'
     QUERY_STATUS_PATH = '/requests/query-status'
+    PAYMENT_OPTIONS_PATH = '/requests/options'
 
     def __init__(self, client_id, client_secret, client_code, service_code):
 
         self.client_id = client_id
         self.client_secret = client_secret
+        self.client_code = client_code
         self.service_code = service_code
         self.domain = self.SANDBOX_DOMAIN
 
@@ -110,7 +112,6 @@ class MulaAdapter(object):
         url = "{}{}".format(self.domain, self.CHARGE_REQUEST_PATH)
         response = requests.post(url, json=payload, headers=self.get_headers())
         return response.json()
-
 
     def request_status(self,
                        transaction_id,
