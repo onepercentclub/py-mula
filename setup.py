@@ -22,7 +22,6 @@ setuptools.setup(
         'requests[security]==2.8.1'
     ],
     tests_require=[
-        'pytest',
         'nose'
     ],
     test_suite='nose.collector',
