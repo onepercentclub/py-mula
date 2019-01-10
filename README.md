@@ -59,6 +59,11 @@ response = adapter.request_status(
 Thanks to Daniel Mbugua for helping out with the Mula API.
 
 
+###### Tests
 
+Running tests
 
+```
+python setup.py test
+```
 
