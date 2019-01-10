@@ -47,7 +47,7 @@ class MulaAdapter(object):
         url = "{}{}".format(self.domain, path)
         token = self.get_access_token()
         response = requests.get(url, auth="Bearer {}".format(token))
-        print response
+        return response.json()
 
     def checkout_request(self,
                          msisdn,

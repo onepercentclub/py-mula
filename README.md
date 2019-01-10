@@ -50,7 +50,7 @@ response = adapter.charge_request(
 To check the status of a payment:
 
 ```
-response = adapter.client.request_status(
+response = adapter.request_status(
   transaction_id=payment.reference,
   checkout_request_id=payment.remote_reference
 )
